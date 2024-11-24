@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:prototype1/global/common/toast.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:device_calendar/device_calendar.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -71,95 +73,145 @@ class HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     final dayEvents = _getEventsForDay(_selectedDay ?? _focusedDay);
 
-   // Ensure all `child` properties are last in their respective widget constructors
-return Scaffold(
-  appBar: AppBar(
-    title: const Text('Calendar'),
-    centerTitle: true,
-  ),
-  body: Column(
-    children: [
-      TableCalendar(
-        firstDay: DateTime.utc(2000, 1, 1),
-        lastDay: DateTime.utc(2100, 12, 31),
-        focusedDay: _focusedDay,
-        calendarFormat: _calendarFormat,
-        selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
-        onDaySelected: (selectedDay, focusedDay) {
-          setState(() {
-            _selectedDay = selectedDay;
-            _focusedDay = focusedDay;
-          });
-        },
-        onFormatChanged: (format) {
-          setState(() {
-            _calendarFormat = format;
-          });
-        },
-        calendarStyle: const CalendarStyle(
-          todayDecoration: BoxDecoration(
-            color: Colors.yellow,
-            shape: BoxShape.circle,
-          ),
-          selectedDecoration: BoxDecoration(
-            color: Colors.orange,
-            shape: BoxShape.circle,
-          ),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Calendar'),
+        centerTitle: true,
+        // Add the hamburger menu for the navigation drawer
+        leading: Builder(
+          builder: (BuildContext context) {
+            return IconButton(
+              icon: const Icon(Icons.menu),
+              onPressed: () {
+                Scaffold.of(context).openDrawer();
+              },
+            );
+          },
         ),
       ),
-      Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Text(
-          _selectedDay != null
-              ? '${_selectedDay!.toLocal()}'.split(' ')[0]
-              : '${_focusedDay.toLocal()}'.split(' ')[0],
-          style: const TextStyle(fontSize: 16),
-        ),
-      ),
-      dayEvents.isEmpty
-          ? const Center(
-              child: Text(
-                'Your calendar is empty\nYou don’t have anything scheduled',
-                textAlign: TextAlign.center, // Ensure child comes last here
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            const DrawerHeader(
+              decoration:  BoxDecoration(
+                color: Color.fromARGB(255, 255, 196, 0),
               ),
-            )
-          : Expanded(
-              child: ListView.builder(
-                itemCount: dayEvents.length,
-                itemBuilder: (context, index) {
-                  final event = dayEvents[index];
-                  return ListTile(
-                    title: Text(event.title ?? 'No Title'),
-                    subtitle: Text(
-                      event.start?.toLocal().toString() ?? 'No Date',
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children:  [
+                  Icon(
+                    Icons.person,
+                    size: 60,
+                    color: Colors.black,
+                  ),
+                  SizedBox(height: 10),
+                  Text(
+                    'Welcome!',
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.black,
                     ),
-                  );
-                },
+                  ),
+                ],
               ),
             ),
-    ],
-  ),
-  floatingActionButton: FloatingActionButton(
-    onPressed: () {
-      // Add new event logic here
-    },
-    backgroundColor: Colors.yellow,
-    child: const Icon(Icons.add),
-  ),
-  bottomNavigationBar: BottomNavigationBar(
-    items: const [
-      BottomNavigationBarItem(
-        icon: Icon(Icons.calendar_today),
-        label: 'Calendar',
+            ListTile(
+              leading: const Icon(Icons.logout),
+              title: const Text('Sign Out'),
+              onTap: () {
+                FirebaseAuth.instance.signOut();
+                showToast(message: "Successfully signed out.");
+                Navigator.pop(context); // Close the drawer
+                Navigator.pushReplacementNamed(context, '/login'); // Navigate to login
+              },
+            ),
+          ],
+        ),
       ),
-      BottomNavigationBarItem(
-        icon: Icon(Icons.timer),
-        label: 'Timer',
+      body: Column(
+        children: [
+          TableCalendar(
+            firstDay: DateTime.utc(2000, 1, 1),
+            lastDay: DateTime.utc(2100, 12, 31),
+            focusedDay: _focusedDay,
+            calendarFormat: _calendarFormat,
+            selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
+            onDaySelected: (selectedDay, focusedDay) {
+              setState(() {
+                _selectedDay = selectedDay;
+                _focusedDay = focusedDay;
+              });
+            },
+            onFormatChanged: (format) {
+              setState(() {
+                _calendarFormat = format;
+              });
+            },
+            calendarStyle: const CalendarStyle(
+              todayDecoration: BoxDecoration(
+                color: Color.fromARGB(255, 255, 196, 0),
+                shape: BoxShape.circle,
+              ),
+              selectedDecoration: BoxDecoration(
+                color: Colors.orange,
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text(
+              _selectedDay != null
+                  ? '${_selectedDay!.toLocal()}'.split(' ')[0]
+                  : '${_focusedDay.toLocal()}'.split(' ')[0],
+              style: const TextStyle(fontSize: 16),
+            ),
+          ),
+          dayEvents.isEmpty
+              ? const Center(
+                  child: Text(
+                    'Your calendar is empty\nYou don’t have anything scheduled',
+                    textAlign: TextAlign.center,
+                  ),
+                )
+              : Expanded(
+                  child: ListView.builder(
+                    itemCount: dayEvents.length,
+                    itemBuilder: (context, index) {
+                      final event = dayEvents[index];
+                      return ListTile(
+                        title: Text(event.title ?? 'No Title'),
+                        subtitle: Text(
+                          event.start?.toLocal().toString() ?? 'No Date',
+                        ),
+                      );
+                    },
+                  ),
+                ),
+        ],
       ),
-    ],
-    currentIndex: 0,
-    selectedItemColor: Colors.yellow,
-  ),
-);
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          // Add new event logic here
+        },
+        backgroundColor: const Color.fromARGB(255, 255, 196, 0),
+        child: const Icon(Icons.add),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.calendar_today),
+            label: 'Calendar',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.timer),
+            label: 'Timer',
+          ),
+        ],
+        currentIndex: 0,
+        selectedItemColor: const Color.fromARGB(255, 255, 196, 0),
+      ),
+    );
   }
 }

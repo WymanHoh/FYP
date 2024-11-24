@@ -41,6 +41,9 @@ dependencies:
   firebase_auth: any
   firebase_storage: any
   cloud_firestore: any
+  font_awesome_flutter: any
+  google_sign_in: any
+  fluttertoast: any
 
 dev_dependencies:
   flutter_test:

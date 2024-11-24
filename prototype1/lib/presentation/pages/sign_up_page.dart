@@ -1,7 +1,7 @@
-import 'dart:developer';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:prototype1/features/user_auth/firebase_auth_implementation/firebase_auth_services.dart';
+import 'package:prototype1/global/common/toast.dart';
 import 'package:prototype1/presentation/pages/home_page.dart';
 import 'package:prototype1/presentation/pages/login_page.dart';
 import 'package:prototype1/presentation/widgets/form_container_widget.dart';
@@ -14,6 +14,9 @@ class SignUpPage extends StatefulWidget {
 }
 
 class _SignUpPageState extends State<SignUpPage> {
+
+  bool isSigningUp = false;
+
   final FirebaseAuthServices _auth = FirebaseAuthServices();
 
   final TextEditingController _usernameController = TextEditingController();
@@ -75,8 +78,8 @@ class _SignUpPageState extends State<SignUpPage> {
                     color: const Color.fromARGB(255, 255, 196, 0),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Center(
-                    child: Text(
+                  child:  Center(
+                    child: isSigningUp ? const CircularProgressIndicator(color: Colors.black) : const Text(
                       "Sign Up",
                       style: TextStyle(
                         color: Colors.white,
@@ -119,18 +122,27 @@ class _SignUpPageState extends State<SignUpPage> {
   }
 
   void _signUp() async {
+
+setState(() {
+  isSigningUp = true;
+});
+
+
    // String username = _usernameController.text;
     String email = _emailController.text;
     String password = _passwordController.text;
 
     User? user = await _auth.signUpWithEmailAndPassword(email, password);
+setState(() {
+  isSigningUp = false;
+});
 
     if (user != null) {
       if (!mounted) return;
-      log("User successfully created");
+      showToast(message: "User is successfully created");
       Navigator.push(context, MaterialPageRoute(builder: (context) => const HomePage()));
     } else {
-      log("Error: User creation failed.");
+    showToast(message: "User creation failed.");
     }
   }
 }

@@ -1,7 +1,7 @@
 import 'package:firebase_core/firebase_core.dart'; // Import Firebase Core
 import 'package:flutter/material.dart';
-import 'package:prototype1/features/app/login/login.dart';
 import 'package:prototype1/presentation/pages/login_page.dart';
+import 'package:prototype1/presentation/pages/home_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized(); // Ensure Flutter is initialized
@@ -21,10 +21,11 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      // home: const Onboarding()
-      home: const LoginScreen(
-        child: LoginPage(),
-      ),
+      initialRoute: '/login',
+      routes: {
+        '/login': (context) => const LoginPage(),
+        '/home': (context) => const HomePage(),
+      },
     );
   }
 }
