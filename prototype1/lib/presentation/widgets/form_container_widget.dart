@@ -11,9 +11,12 @@ class FormContainerWidget extends StatefulWidget {
   final FormFieldValidator<String>? validator;
   final ValueChanged<String>? onFieldSubmitted;
   final TextInputType? inputType;
+  final Color? textColor; // Added: Text color
+  final Color? borderColor; // Added: Border color
+  final Color? backgroundColor; // Added: Background color
 
   const FormContainerWidget({
-    super.key, // Use 'super' directly for key
+    super.key,
     this.controller,
     this.isPasswordField,
     this.fieldKey,
@@ -24,13 +27,16 @@ class FormContainerWidget extends StatefulWidget {
     this.validator,
     this.onFieldSubmitted,
     this.inputType,
+    this.textColor = Colors.white, // Default: White text color
+    this.borderColor = Colors.grey, // Default: Grey border
+    this.backgroundColor = const Color.fromARGB(255, 23, 24, 26), // Default: Dark background
   });
 
   @override
-  FormContainerWidgetState createState() => FormContainerWidgetState(); // Remove leading underscore
+  FormContainerWidgetState createState() => FormContainerWidgetState();
 }
 
-class FormContainerWidgetState extends State<FormContainerWidget> { // Remove leading underscore
+class FormContainerWidgetState extends State<FormContainerWidget> {
   bool _obscureText = true;
 
   @override
@@ -39,11 +45,12 @@ class FormContainerWidgetState extends State<FormContainerWidget> { // Remove le
       width: double.infinity,
       clipBehavior: Clip.hardEdge,
       decoration: BoxDecoration(
-        color: Colors.grey.withOpacity(.35),
+        color: widget.backgroundColor, // Apply background color
         borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: widget.borderColor!), // Apply border color
       ),
       child: TextFormField(
-        style: const TextStyle(color: Colors.black),
+        style: TextStyle(color: widget.textColor), // Apply text color
         controller: widget.controller,
         keyboardType: widget.inputType,
         key: widget.fieldKey,
@@ -54,8 +61,9 @@ class FormContainerWidgetState extends State<FormContainerWidget> { // Remove le
         decoration: InputDecoration(
           border: InputBorder.none,
           filled: true,
+          fillColor: widget.backgroundColor, // Match container color
           hintText: widget.hintText,
-          hintStyle: const TextStyle(color: Colors.black45),
+          hintStyle: TextStyle(color: widget.textColor?.withOpacity(0.6)), // Faded text color
           suffixIcon: widget.isPasswordField == true
               ? GestureDetector(
                   onTap: () {

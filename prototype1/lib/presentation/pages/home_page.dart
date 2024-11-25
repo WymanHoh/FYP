@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:prototype1/global/common/toast.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:device_calendar/device_calendar.dart';
@@ -71,13 +72,17 @@ class HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final String formattedDate = DateFormat('MMMM yyyy').format(_focusedDay);
     final dayEvents = _getEventsForDay(_selectedDay ?? _focusedDay);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Calendar'),
+        title: const Text(
+          'Procrastination Terminator',
+          style: TextStyle(color: Colors.white),
+        ),
         centerTitle: true,
-        // Add the hamburger menu for the navigation drawer
+        backgroundColor: Colors.black,
         leading: Builder(
           builder: (BuildContext context) {
             return IconButton(
@@ -88,18 +93,30 @@ class HomePageState extends State<HomePage> {
             );
           },
         ),
+        actions: [
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert, color: Colors.white),
+            onSelected: (value) {
+              // Handle menu selection
+            },
+            itemBuilder: (context) => [
+              const PopupMenuItem(value: 'Settings', child: Text('Settings')),
+              const PopupMenuItem(value: 'Help', child: Text('Help')),
+            ],
+          ),
+        ],
       ),
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
             const DrawerHeader(
-              decoration:  BoxDecoration(
+              decoration: BoxDecoration(
                 color: Color.fromARGB(255, 255, 196, 0),
               ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children:  [
+                children: [
                   Icon(
                     Icons.person,
                     size: 60,
@@ -131,21 +148,49 @@ class HomePageState extends State<HomePage> {
       ),
       body: Column(
         children: [
+          // Custom Calendar Header
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  formattedDate, // Display "November 2024"
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                IconButton(
+                  onPressed: () {
+                    setState(() {
+                      _calendarFormat = _calendarFormat == CalendarFormat.week
+                          ? CalendarFormat.month
+                          : CalendarFormat.week;
+                    });
+                  },
+                  icon: Icon(
+                    _calendarFormat == CalendarFormat.week
+                        ? Icons.arrow_drop_down
+                        : Icons.arrow_drop_up,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // TableCalendar without default header
           TableCalendar(
             firstDay: DateTime.utc(2000, 1, 1),
             lastDay: DateTime.utc(2100, 12, 31),
             focusedDay: _focusedDay,
             calendarFormat: _calendarFormat,
+            headerVisible: false, // Disable the default header
             selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
             onDaySelected: (selectedDay, focusedDay) {
               setState(() {
                 _selectedDay = selectedDay;
                 _focusedDay = focusedDay;
-              });
-            },
-            onFormatChanged: (format) {
-              setState(() {
-                _calendarFormat = format;
               });
             },
             calendarStyle: const CalendarStyle(
@@ -154,25 +199,18 @@ class HomePageState extends State<HomePage> {
                 shape: BoxShape.circle,
               ),
               selectedDecoration: BoxDecoration(
-                color: Colors.orange,
+                color: Color.fromARGB(255, 255, 196, 0),
                 shape: BoxShape.circle,
               ),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(
-              _selectedDay != null
-                  ? '${_selectedDay!.toLocal()}'.split(' ')[0]
-                  : '${_focusedDay.toLocal()}'.split(' ')[0],
-              style: const TextStyle(fontSize: 16),
-            ),
-          ),
           dayEvents.isEmpty
-              ? const Center(
-                  child: Text(
-                    'Your calendar is empty\nYou don’t have anything scheduled',
-                    textAlign: TextAlign.center,
+              ? const Expanded(
+                  child: Center(
+                    child: Text(
+                      'Your calendar is empty\nYou don’t have anything scheduled',
+                      textAlign: TextAlign.center,
+                    ),
                   ),
                 )
               : Expanded(
